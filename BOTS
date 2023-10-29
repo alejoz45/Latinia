@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulario</title>
+    <style>
+    /* Ocultar las columnas "Param ID" y "Temp ID" en la tabla */
+#param-table th:nth-child(1),
+#param-table td:nth-child(1),
+#param-table th:nth-child(2),
+#param-table td:nth-child(2) {
+    display: none;
+}
+    /* Estilos para el fondo de la sección */
+    
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("https://pbs.twimg.com/media/DP4zhDyXUAEX9dm?format=jpg&name=large"); /* Actualiza la ruta de la imagen */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed; /* La imagen de fondo se mantendrá fija */
+            font-family: Arial, sans-serif; /* Estilo de fuente predeterminado */
+        }
+
+        /* Estilos para el contenedor central */
+        .section {
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semi-transparente */
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #FF8800;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="checkbox"] {
+            padding: 8px;
+            margin: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button-group button.add-record {
+            background-color: #00cc66;
+            color: white;
+        }
+
+        .button-group button.submit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .button-group button.return-home {
+            background-color: #ff6666;
+            color: white;
+        }
+        .back-to-home {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #FF8800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .blue-button {
+            background-color: #0074D9;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .blue-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilos para alinear a la derecha */
+        .right-align {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .back-button {
+    position: fixed;
+    top: 10px; /* Ajusta esta distancia según tu preferencia */
+    right: 10px; /* Ajusta esta distancia según tu preferencia */
+}
+
+ </style>
+<script>
+    // Función para actualizar los datos en la tabla "Template_params"
+    function actualizarEstado() {
+  var rows = document.querySelectorAll("#param-table tbody tr");
+  var data = [];
+  var newRows = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var paramId = parseInt(row.cells[0].textContent);
+    var name = row.cells[2].textContent;
+    var value = row.cells[3].textContent;
+    var estado = row.cells[4].querySelector("input[type='checkbox']").checked ? 1 : 0;
+
+    if (paramId === 0) {
+      // Registro nuevo, agregar a newRows
+      newRows.push({
+        name: name,
+        value: value,
+        estado: estado
+      });
+    } else {
+      // Registro existente, agregar a data para actualizar
+      data.push({
+        paramId: paramId,
+        name: name,
+        value: value,
+        estado: estado
+      });
+    }
+  }
+
+  if (newRows.length > 0) {
+    // Insertar registros nuevos en la tabla Template_params
+    var xhrInsert = new XMLHttpRequest();
+    xhrInsert.open("POST", "insertarRegistros.php", true);
+    xhrInsert.setRequestHeader("Content-Type", "application/json");
+    xhrInsert.onreadystatechange = function () {
+      if (xhrInsert.readyState === 4) {
+        if (xhrInsert.status === 200) {
+          var responseInsert = JSON.parse(xhrInsert.responseText);
+          if (responseInsert.success) {
+            // Registros nuevos insertados correctamente
+            console.log("Registros nuevos insertados correctamente.");
+            alert("Los registros nuevos se han insertado correctamente.");
+          } else {
+            console.log("Error al insertar los registros nuevos.");
+            alert("Error al insertar los registros nuevos.");
+          }
+        } else {
+          console.log("Error en la petición. Estado: " + xhrInsert.status);
+          alert("Error en la petición. Estado: " + xhrInsert.status);
+        }
+      }
+    };
+    xhrInsert.send(JSON.stringify(newRows));
+  }
+
+  if (data.length > 0) {
+    // Actualizar registros existentes en la tabla Template_params
+    var xhrUpdate = new XMLHttpRequest();
+    xhrUpdate.open("POST", "actualizarEstado.php", true);
+    xhrUpdate.setRequestHeader("Content-Type", "application/json");
+    xhrUpdate.onreadystatechange = function () {
+      if (xhrUpdate.readyState === 4) {
+        if (xhrUpdate.status === 200) {
+          var responseUpdate = JSON.parse(xhrUpdate.responseText);
+          if (responseUpdate.success) {
+            // Registros existentes actualizados correctamente
+            console.log("Registros existentes actualizados correctamente.");
+            alert("Los estados se han actualizado correctamente.");
+          } else {
+            console.log("Error al actualizar los registros existentes.");
+            alert("Error al actualizar los registros existentes.");
+          }
+        } else {
+          console.log("Error en la petición. Estado: " + xhrUpdate.status);
+          alert("Error en la petición. Estado: " + xhrUpdate.status);
+        }
+      }
+    };
+    xhrUpdate.send(JSON.stringify(data));
+  }
+}
+
+function showSection(sectionId) {
+      var sections = document.getElementsByClassName("section");
+      for (var i = 0; i < sections.length; i++) {
+        sections[i].style.display = "none";
+      }
+      document.getElementById(sectionId).style.display = "block";
+    }
+
+    function addRow() {
+  var table = document.getElementById("param-table");
+  var newRow = table.insertRow();
+
+  var paramIdCell = newRow.insertCell();
+  paramIdCell.textContent = "0"; // Establece el valor inicial de paramId a 0
+
+  var tempIdCell = newRow.insertCell();
+  tempIdCell.textContent = "0"; // Establece el valor inicial de tempId a 0
+
+  var nameCell = newRow.insertCell();
+  nameCell.contentEditable = true;
+
+  var valueCell = newRow.insertCell();
+  valueCell.contentEditable = true;
+
+  var estadoCell = newRow.insertCell();
+  var checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = true;
+  estadoCell.appendChild(checkbox);
+}
+
+    function syncCheckboxes() {
+      var checkboxes = document.querySelectorAll("#param-table input[type='checkbox']");
+      var rows = document.querySelectorAll("#param-table tbody tr");
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = rows[i].classList.contains("active");
+      }
+    }
+
+    function toggleActive(row) {
+      row.classList.toggle("active");
+      syncCheckboxes();
+    }
+
+    window.addEventListener("DOMContentLoaded", function () {
+      var rows = document.querySelectorAll("#param-table tbody tr");
+
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].addEventListener("click", function () {
+          toggleActive(this);
+        });
+      }
+
+      // Agrega el evento "change" a los checkboxes
+      var checkboxes = document.querySelectorAll("#param-table input[type='checkbox']");
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].addEventListener("change", function () {
+          syncCheckboxes();
+        });
+      }
+
+      syncCheckboxes();
+    });
+
+    function verParametrizacion() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var tablaParametrizacion = document.getElementById("tablaParametrizacion");
+          tablaParametrizacion.innerHTML = xhr.responseText;
+        }
+      };
+      xhr.open("GET", "obtener_parametrizacion.php", true);
+      xhr.send();
+    }
+      </script>
+</head>
+<body>
+<div class="section" id="bot1">
+    <div style="text-align: right;">
+    <a href="http://172.29.11.202:8080/latinia/public/" target="_blank" style="display: inline-block; padding: 5px 13px; background-color: #FF8800; color: white; text-decoration: none; border-radius: 2px; border: 2px solid black; font-size: 14px; font-weight: bold;">Controlador de Pruebas (Start/Stop)</a>
+</div>
+
+    <div class="section" id="bot1">
+      <h3>Envío de mensajes</h3>
+      
+     <?php
+      if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+          // Obtener los valores ingresados por el usuario en el formulario
+          $organizacion = $_POST['organizacion'];
+          $servicio = $_POST['servicio'];
+
+          // Realizar la conexión a la base de datos
+          $conn = pg_connect("host=172.29.11.202 dbname=latinia-qa user=postgres password=31ZN0I!x6H&V");
+
+          // Verificar si la organización existe en la tabla "Company"
+          $query = "SELECT COUNT(*) FROM \"Company\" WHERE \"refCompany\" = '$organizacion'";
+          $result = pg_query($conn, $query);
+          $row = pg_fetch_row($result);
+          $organizacionExistente = $row[0] > 0;
+
+          if ($organizacionExistente) {
+            // Verificar si el servicio existe en la tabla "Service" para la organización especificada
+            $query = "SELECT COUNT(*) FROM \"Service\"
+                      WHERE \"refService\" = '$servicio'
+                      AND \"org_uniqueID\" = (SELECT \"org_uniqueID\" FROM \"Company\" WHERE \"refCompany\" = '$organizacion')";
+            $result = pg_query($conn, $query);
+            $row = pg_fetch_row($result);
+            $servicioExistente = $row[0] > 0;
+
+            // Si la organización existe, actualiza el Estado = 1
+            $query = "UPDATE \"Company\" SET \"Estado\" = 13
+            WHERE \"refCompany\" = '$organizacion'
+            AND \"org_uniqueID\" = (SELECT \"org_uniqueID\" FROM \"Company\" WHERE \"refCompany\" = '$organizacion')";
+  $result = pg_query($conn, $query);
+
+            if ($servicioExistente) {
+              // El servicio existe, actualizar el "Estado" en la tabla "Service"
+              $query = "UPDATE \"Service\" SET \"Estado\" = 1
+                        WHERE \"refService\" = '$servicio'
+                        AND \"org_uniqueID\" = (SELECT \"org_uniqueID\" FROM \"Company\" WHERE \"refCompany\" = '$organizacion')";
+              $result = pg_query($conn, $query);
+              if ($result) {
+                echo "<div style='position: fixed; top: 50%; left: 19cm; transform: translateY(-50%); background-color: #00FF00; color: #000; padding: 5px; border-radius: 3px; font-weight: bold; text-align: center; font-size: 14px;'>Operación exitosa.</div>";
+               
+              } else {
+                // Error al ejecutar la consulta
+                echo "Error al ejecutar la consulta.";
+              }
+            } else {
+              // El servicio no existe, obtener el próximo valor de la secuencia para "serv_uniqueID"
+              $query = "SELECT nextval('service_serv_uniqueID_seq')";
+              $result = pg_query($conn, $query);
+              $row = pg_fetch_row($result);
+              $nextServUniqueID = $row[0];
+          
+              // Insertar un nuevo registro en la tabla "Service"
+              $query = "INSERT INTO \"Service\" (\"refService\", \"org_uniqueID\", \"serv_uniqueID\", \"temp_uniqueID\", \"Estado\")
+              SELECT '$servicio', \"org_uniqueID\", $nextServUniqueID, 1, 1
+              FROM \"Company\" WHERE \"refCompany\" = '$organizacion'";
+              $result = pg_query($conn, $query);
+              if ($result) {
+                // Operación exitosa
+                echo "<div style='position: fixed; top: 50%; left: 32cm; transform: translateY(-50%); background-color: #00FF00; color: #000; padding: 5px; border-radius: 3px; font-weight: bold; text-align: center; font-size: 16px;'>Operación exitosa.</div>";
+                } else {
+                // Error al ejecutar la consulta
+                echo "Error al ejecutar la consulta.";
+              }
+            }
+          } else {
+            // La organización no existe, realizar la inserción en las tablas "Company" y "Service"
+            $query = "INSERT INTO \"Company\" (\"refCompany\", \"org_uniqueID\", \"Estado\") VALUES ('$organizacion',
+                      (SELECT COALESCE(MAX(\"org_uniqueID\"), 0) + 1 FROM \"Company\"), 13)";
+            $result = pg_query($conn, $query);
+            if ($result) {
+              // Obtener el último valor insertado en la columna "org_uniqueID" de la tabla "Company"
+              $query = "SELECT MAX(\"org_uniqueID\") FROM \"Company\"";
+              $result = pg_query($conn, $query);
+              $row = pg_fetch_row($result);
+              $orgUniqueID = $row[0];
+              } else {
+             echo "Error al ejecutar la consulta.";
+            }
+          }
+          // Cerrar la conexión a la base de datos
+          pg_close($conn);
+        } catch (Exception $e) {
+          echo "Ha ocurrido un error en el servidor.";
+        }
+      } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['limpiar'])) {
+        try {
+          // Realizar la conexión a la base de datos (asumiendo que ya has configurado la conexión)
+          $conn = pg_connect("host=172.29.11.202 dbname=latinia-qa user=postgres password=31ZN0I!x6H&V");
+
+          // Actualizar el valor de "Estado" a 0 en la tabla "Service"
+          $query = "UPDATE \"Service\" SET \"Estado\" = 0";
+          $result = pg_query($conn, $query);
+
+          // Actualizar el valor de "Estado" a 0 en la tabla "Template_params"
+          $query = "UPDATE \"Template_params\" SET \"Estado\" = 0";
+          $result = pg_query($conn, $query);
+
+          if ($result) {
+            // Actualizar el valor de "Estado" a 0 en la tabla "Company"
+            $query = "UPDATE \"Company\" SET \"Estado\" = 0";
+            $result = pg_query($conn, $query);
+
+            if ($result) {
+              echo "<div style='position: fixed; top: 50%; left: 22cm; transform: translateY(-50%); background-color: #00FF00; color: #000; padding: 5px; border-radius: 3px; font-weight: bold; text-align: center; font-size: 13px;'>Parametrización limpiada exitosamente.</div>";
+              
+            }
+             else {
+              // Error al ejecutar la consulta
+              echo "Error al limpiar la parametrización.";
+            }
+          } else {
+            // Error al ejecutar la consulta
+            echo "Error al limpiar la parametrización.";
+          }
+
+          // Cerrar la conexión a la base de datos
+          pg_close($conn);
+        } catch (Exception $e) {
+          echo "Ha ocurrido un error en el servidor.";
+        }
+      }
+      ?>
+      <form method="POST">
+      <div>
+      <label for="organizacion">Ingrese la Organización:</label>
+ 
+  <input type="text" id="organizacion" name="organizacion" required><br>
+    </div>
+        <div>
+          <label for="servicio">Ingrese el Servicio:</label><br>
+          <input type="text" id="servicio" name="servicio" required><br>
+        </div>
+        <div style="float: right;">
+  </div>
+        <div>
+          <input type="submit" value="Guardar">
+        </div>
+        
+      </form>
+        
+      <h4>Seleccione los campos que desea enviar en la transacción:</h4>
+      <table id="param-table">
+        <thead>
+          <tr>
+            <th>Param ID</th>
+            <th>Temp ID</th>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          // Realizar la conexión a la base de datos (asumiendo que ya has configurado la conexión)
+          $conn = pg_connect("host=172.29.11.202 dbname=latinia-qa user=postgres password=31ZN0I!x6H&V");
+
+          // Obtener los parámetros de la plantilla
+          $query = "SELECT \"param_uniqueID\", \"temp_uniqueID\", \"name\", \"value\", \"Estado\" FROM \"Template_params\"";
+          $result = pg_query($conn, $query);
+
+          while ($row = pg_fetch_assoc($result)) {
+            echo "<tr" . ($row['Estado'] == 1 ? " class='active'" : "") . ">";
+            echo "<td contenteditable='false'>" . $row['param_uniqueID'] . "</td>";
+            echo "<td contenteditable='false'>" . $row['temp_uniqueID'] . "</td>";
+            echo "<td contenteditable='true'>" . $row['name'] . "</td>";
+            echo "<td contenteditable='true'>" . $row['value'] . "</td>";
+            echo "<td><input type='checkbox' " . ($row['Estado'] == 1 ? "checked" : "") . "></td>";
+            echo "</tr>";
+          }
+
+
+
+          // Cerrar la conexión a la base de datos
+          pg_close($conn);
+          ?>
+        </tbody>
+        </table>
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+  <button type="button" onclick="addRow()">Agregar Registros</button>
+  <button type="button" onclick="actualizarEstado()" style="background-color: #0074D9; color: #fff; padding: 10px 20px; border: none; border-radius: 3px; text-decoration: none; font-weight: bold; cursor: pointer; margin-left: 10px;">Actualizar Campos</button>
+</div>
+<div id="tablaParametrizacion"></div>
+<div class="clear-button">
+  <form method="GET">
+    <button type="submit" name="limpiar">Limpiar parametrización</button>
+  </form>
+</div>
+
+    </div>
+    <div class="back-button">
+    <a href="index.php" style="display: inline-block; padding: 6px 18px; background-color: orange; color: white; text-decoration: none; border-radius: 3px;">Regresar al inicio</a>
+    </div>
+    <div class="section" id="resultados">
+  <h3>Parametrización actual</h3>
+
+  <div>
+    <table>
+        <thead>
+            <tr>
+                <th>Organización</th>
+                <th>Servicio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $organizacionesYServicios = getOrganizacionesYServiciosActivos();
+            foreach ($organizacionesYServicios as $row) {
+                echo "<tr>";
+                echo "<td>" . $row['organizacion'] . "</td>";
+                echo "<td>" . $row['servicio'] . "</td>";
+                echo "</tr>";
+            }
+            ?>
+      </tbody>
+    </table>
+  </div>
+  <?php
+// Obtener organizaciones y servicios activos
+function getOrganizacionesYServiciosActivos() {
+    $conn = pg_connect("host=172.29.11.202 dbname=latinia-qa user=postgres password=31ZN0I!x6H&V");
+    $query = "SELECT 
+                c.\"refCompany\" as organizacion,
+                s.\"refService\" as servicio
+              FROM 
+                \"Company\" c
+              LEFT JOIN
+                \"Service\" s
+              ON 
+                c.\"org_uniqueID\" = s.\"org_uniqueID\"
+              WHERE 
+                c.\"Estado\" = '13' AND s.\"Estado\" = '1'";
+    
+    $result = pg_query($conn, $query);
+    $data = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $data[] = $row;
+        }
+    }
+
+    pg_close($conn);
+    return $data;
+}
+?>
+  <?php
+// Verificar si se ha enviado el formulario antes de intentar acceder a $_POST['organizacion']
+if (isset($_POST['organizacion'])) {
+  // Realizar la conexión a la base de datos (asumiendo que ya has configurado la conexión)
+  $conn = pg_connect("host=172.29.11.202 dbname=latinia-qa user=postgres password=31ZN0I!x6H&V");
+
+  // Obtener el total de usuarios activos
+  $query = "SELECT COUNT(*) FROM \"Users\"
+            WHERE \"Estado\" = '1'
+            AND \"org_uniqueID\" IN (SELECT \"org_uniqueID\" FROM \"Company\" WHERE \"Estado\" = '13')";
+  $result = pg_query($conn, $query);
+  $row = pg_fetch_row($result);
+  $totalUsuariosActivos = $row[0];
+
+  // Mostrar el resultado
+  echo "<div>";
+  echo "<h4>Usuarios activos:</h4>";
+  echo "<p>Total de usuarios activos: $totalUsuariosActivos</p>";
+  echo "</div>";
+
+  // Cerrar la conexión a la base de datos
+  pg_close($conn);
+}
+?>
+</div>
+<script>
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+</body>
+</html>
+
+    
